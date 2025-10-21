@@ -1,4 +1,3 @@
-'use client'
 import {
     Table,
     TableBody,
@@ -9,122 +8,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-const invoices = [
-    {
-        name: "INV001",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV002",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV003",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV004",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV005",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV006",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-    {
-        name: "INV007",
-        responsavel: "Paid",
-        tipoCobranca: "$250.00",
-        dataAprovacao: "Credit Card",
-        ptax: '5.7788',
-        orcado: '20',
-        realizado: '20',
-        variacao: '0%',
-        horasOrcada: '0',
-        valorHora: '0',
-        obs: '',
-        status: 'Aprovado',
-        prioridade: 'Alto',
-        automacao: 'Enviar Notificação'
-    },
-]
+import { getAlerts } from "./actions/alertActions"
 
-export const TableAlert = () => {
+export const TableAlert = async () => {
+    const alerts = await getAlerts()
     return (
         <div className="font-sans items-center justify-items-center text-white custom-scrollbar">
             <Table>
@@ -146,20 +33,20 @@ export const TableAlert = () => {
                     </TableRow>
                 </TableHeader>
                 <TableBody className="bg-gray-900">
-                    {invoices.map((invoice) => (
-                        <TableRow key={invoice.name}>
-                            <TableCell className="font-medium">{invoice.name}</TableCell>
-                            <TableCell>{invoice.responsavel}</TableCell>
-                            <TableCell>{invoice.dataAprovacao}</TableCell>
-                            <TableCell>{invoice.tipoCobranca}</TableCell>
-                            <TableCell>{invoice.ptax}</TableCell>
-                            <TableCell>{invoice.orcado}</TableCell>
-                            <TableCell>{invoice.horasOrcada}</TableCell>
-                            <TableCell>{invoice.valorHora}</TableCell>
-                            <TableCell>{invoice.obs}</TableCell>
-                            <TableCell>{invoice.status}</TableCell>
-                            <TableCell>{invoice.prioridade}</TableCell>
-                            <TableCell className="text-right">{invoice.automacao}</TableCell>
+                    {alerts.map((alert) => (
+                        <TableRow key={alert.id}>
+                            <TableCell className="font-medium">{alert.name}</TableCell>
+                            <TableCell>{alert.responsavel}</TableCell>
+                            <TableCell>{alert.dataAprovacao}</TableCell>
+                            <TableCell>{alert.tipoCobranca}</TableCell>
+                            <TableCell>{alert.ptax}</TableCell>
+                            <TableCell>{alert.orcado}</TableCell>
+                            <TableCell>{alert.horaOrcadas}</TableCell>
+                            <TableCell>{alert.valorHora}</TableCell>
+                            <TableCell>{alert.obs}</TableCell>
+                            <TableCell>{alert.status}</TableCell>
+                            <TableCell>{alert.prioridade}</TableCell>
+                            <TableCell className="text-right">Anexo Aqui</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

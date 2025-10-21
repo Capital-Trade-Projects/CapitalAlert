@@ -1,80 +1,88 @@
-import { Button } from "@/components/ui/button"
+"use client";
+
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogClose,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import prisma from "@/lib/prisma"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { createAlert } from "@/app/components/actions/alertActions";
 
-export const HeaderAlert = async () => {
-    const alerts = await prisma.alert.findMany()
+export const HeaderAlert = () => {
     return (
         <div className="bg-amber-500 h-[10vh] items-center justify-items-center flex justify-between">
-            <div className="text-center p-3 text-2xl">
-                Capital Trade
-            </div>
+            <div className="text-center p-3 text-2xl">Capital Trade</div>
 
             <div className="p-4">
                 <Dialog>
-                    <form>
-                        <DialogTrigger asChild>
-                            <Button variant="outline">Add Item</Button>
-                        </DialogTrigger>
-                        <DialogContent className="">
+
+                    <DialogTrigger asChild>
+                        <Button variant="outline">Add Item</Button>
+                    </DialogTrigger>
+
+                    <DialogContent>
+                        <form action={createAlert}>
                             <DialogHeader>
-                                <DialogTitle>Edit profile</DialogTitle>
-                                <DialogDescription>
-                                    Make changes to your profile here. Click save when you&apos;re
-                                    done.
-                                </DialogDescription>
+                                <DialogTitle>Adicionar Item</DialogTitle>
                             </DialogHeader>
-                            <div className="grid h-[20v]">
-                                <div className="grid gap-3">
-                                    {alerts.map((alert) => (
-                                        <li key={alert.id}></li>
-                                    ))}
-                                    {/* <Label htmlFor="name-1">Name</Label>
-                                    <Input id="name" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Responsavel</Label>
-                                    <Input id="responsavel" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Data de Aprovação</Label>
-                                    <Input id="dataAprovacao" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Tipo de Cobrança</Label>
-                                    <Input id="tipoCobranca" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">PTAX</Label>
-                                    <Input id="ptax" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Orçado</Label>
-                                    <Input id="orcado" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Horas Orçadas</Label>
-                                    <Input id="horaOrcadas" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Valor Hora</Label>
-                                    <Input id="valorHora" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">OBS</Label>
-                                    <Input id="obs" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Status</Label>
-                                    <Input id="status" name="name" defaultValue="" />
-                                    <Label htmlFor="name-1">Prioridade</Label>
-                                    <Input id="prioridade" name="name" defaultValue="" /> */}
-                                </div>
+
+                            <div className="grid gap-3">
+                                <Label htmlFor="name">Name</Label>
+                                <Input id="name" name="name" />
+
+                                <Label htmlFor="responsavel">Responsavel</Label>
+                                <Input id="responsavel" name="responsavel" />
+
+                                <Label htmlFor="dataAprovacao">Data de Aprovação</Label>
+                                <Input id="dataAprovacao" name="dataAprovacao" />
+
+                                <Label htmlFor="tipoCobranca">Tipo de Cobrança</Label>
+                                <Input id="tipoCobranca" name="tipoCobranca" />
+
+                                <Label htmlFor="ptax">PTAX</Label>
+                                <Input id="ptax" name="ptax" />
+
+                                <Label htmlFor="orcado">Orçado</Label>
+                                <Input id="orcado" name="orcado" />
+
+                                <Label htmlFor="realizado">Realizado</Label>
+                                <Input id="realizado" name="realizado" />
+
+                                <Label htmlFor="variacao">Variação</Label>
+                                <Input id="variacao" name="variacao" />
+
+                                <Label htmlFor="horaOrcadas">Horas Orçadas</Label>
+                                <Input id="horaOrcadas" name="horaOrcadas" />
+
+                                <Label htmlFor="valorHora">Valor Hora</Label>
+                                <Input id="valorHora" name="valorHora" />
+
+                                <Label htmlFor="obs">OBS</Label>
+                                <Input id="obs" name="obs" />
+
+                                <Label htmlFor="status">Status</Label>
+                                <Input id="status" name="status" />
+
+                                <Label htmlFor="prioridade">Prioridade</Label>
+                                <Input id="prioridade" name="prioridade" />
                             </div>
+
                             <DialogFooter>
                                 <DialogClose asChild>
                                     <Button variant="outline">Cancel</Button>
                                 </DialogClose>
-                                <Button type="submit">Save changes</Button>
+                                <Button type="submit">Salvar</Button>
                             </DialogFooter>
-                        </DialogContent>
-                    </form>
+                        </form>
+                    </DialogContent>
                 </Dialog>
             </div>
-
         </div>
-    )
-}
+    );
+};

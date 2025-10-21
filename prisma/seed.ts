@@ -6,18 +6,17 @@ const userData: Prisma.AlertItemsCreateInput[] =[
     {
         name: 'v0.dev',
         responsavel: 'Victor Marcondes',
-        dataAprovacao: 13102025,
+        dataAprovacao: '13/10/2025',
         tipoCobranca: 'Mensal',
-        ptax: 5.7788,
-        orcado: 20,
-        realizado: 20,
-        variacao: 0,
-        horaOrcadas: 0,
-        valorHora: 0,
+        ptax: '5.7788',
+        orcado: '20',
+        realizado: '20',
+        variacao: '0',
+        horaOrcadas: '0',
+        valorHora: '0',
         obs: '',
-        status: true,
+        status: '',
         prioridade: 'Alto',
-        automacao: 'Enviar notificação'
     }
 ];
 
