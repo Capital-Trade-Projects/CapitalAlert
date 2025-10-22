@@ -3,6 +3,7 @@
 import { AlertItems } from "@/lib/generated/prisma"
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation";
 
 export async function getAlerts():Promise<AlertItems[]> {
     return await prisma.alertItems.findMany();
@@ -43,12 +44,12 @@ export async function createAlert(data: FormData): Promise<void> {
   })
 
   // Importante: não dar return, apenas chamar
-  revalidatePath('/seed.ts')
+  revalidatePath('/')
 }
 
 export async function updateAlert(data:FormData): Promise<void> {
   try {
-    const id = data.get('id') as any
+    const id = Number(data.get('id'))
     const name = data.get('name') as string
     const responsavel = data.get("responsavel") as string
     const dataAprovacao = data.get("dataAprovacao") as string
@@ -64,7 +65,7 @@ export async function updateAlert(data:FormData): Promise<void> {
     const variacao = data.get("variacao") as string
 
     await prisma.alertItems.update({
-      where: { id: 1 },
+      where: { id },
       data: { 
         name,
         responsavel,
@@ -82,18 +83,21 @@ export async function updateAlert(data:FormData): Promise<void> {
       }
     })
 
-    revalidatePath('/seed.ts')
+    revalidatePath('/')
+    redirect('/');
+    
   } catch (error) {
-     { error: 'Falhou a atualização dos dados' }
+    throw new Error('Falhou a atualização dos dados') 
   }
 }
 
 export async function deleteAlert(data:FormData): Promise<void> {
-  const id = data.get('id') as any
+  const id = Number(data.get('id'))
 
   await prisma.alertItems.delete({
-    where: { id: 1 }
+    where: { id }
   })
 
-  revalidatePath('/seed.ts')
+  revalidatePath('/')
+  redirect('/')
 }

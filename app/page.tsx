@@ -1,11 +1,11 @@
 import { HeaderAlert } from "./components/header";
-import { TableAlert } from "./components/table";
+import { TableAlertWrapper } from "./components/TableAlertWrapper";
 
 export default function Home() {
   return (
     <div className="bg-black">
       <HeaderAlert />
-      <TableAlert />
+      <TableAlertWrapper />
     </div>
   );
 }
