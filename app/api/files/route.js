@@ -24,16 +24,7 @@ export async function GET() {
 
       );    
     });  
-        // const response = await r2.send(command);
-
-        // const files = 
-        // response.Contents?.map((file) => ({
-        //     name: file.Key,
-        //     size: file.Size,
-        //     lastModified: file.LastModified,
-        //     url: `${process.env.R2_PUBLIC_URL}/${file.Key}`, 
-        // })) ??[];
-
+    
         return NextResponse.json(paginator);
     } catch (err) {
         console.error(err)
