@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createAlert } from "@/app/components/actions/alertActions";
+import { createAlert, deleteAlert, updateAlert } from "@/app/components/actions/alertActions";
 
 export const HeaderAlert = () => {
     return (
