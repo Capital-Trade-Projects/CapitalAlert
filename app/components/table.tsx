@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { AlertItems } from "@/lib/generated/prisma";
 import {
   Dialog,
@@ -26,6 +26,8 @@ import { Input } from "@/components/ui/input";
 import { deleteAlert, updateAlert } from "./actions/alertActions";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import ButtonDelete from "@/components/ui/ButtonDelete";
+import UploadButton from "../Upload";
 
 type TableAlertProp = {
   alerts: AlertItems[];
@@ -65,46 +67,52 @@ const [toggle, setToggle] = useState<string[]>([]);
   console.log(toggle, 'deu bom')
 
   return (
-    <>
-      {/* 🔹 Diálogo (renderizado fora da tabela, controlado por estado) */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Detalhes do Alerta</DialogTitle>
-          </DialogHeader>
+  <>
+    {/* 🔹 Diálogo (renderizado fora da tabela, controlado por estado) */}
+    <Dialog open={open} onOpenChange={() => setOpen((prevState) => !prevState)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Detalhes do Alerta</DialogTitle>
+        </DialogHeader>
 
-          {selectedAlert ? (
-            <form action = {handleSubmit}>
-                <input type="hidden" name="id" value={selectedAlert.id} />
-            <div className="space-y-2 text-sm text-black">
+        {selectedAlert ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              handleSubmit(formData);
+            }}
+          >
+            <input type="hidden" name="id" value={selectedAlert.id} />
+            <div className="font-sans text-white custom-scrollbar overflow-auto h-[60vh] p-4 space-y-2">
               <p><strong>id:</strong> {selectedAlert.id}</p>
-              <p><strong>Nome:</strong> <Input id="name" name="name" /> </p>
-              <p><strong>Responsável:</strong> <Input id="responsavel" name="responsavel" /></p>
-              <p><strong>Data de Aprovação:</strong> <Input id="dataAprovacao" name="dataAprovacao" /></p>
-              <p><strong>Tipo de Cobrança:</strong> <Input id="tipoCobranca" name="tipoCobranca" /></p>
-              <p><strong>PTAX:</strong> <Input id="ptax" name="ptax" /></p>
-              <p><strong>Orçado:</strong> <Input id="orcado" name="orcado" /></p>
-              <p><strong>Realizado:</strong> <Input id="realizado" name="realizado" /></p>
-              <p><strong>Variação:</strong> <Input id="variacao" name="variacao" /></p>
-              <p><strong>Horas Orçadas:</strong> <Input id="horaOrcadas" name="horaOrcadas" /></p>
-              <p><strong>Valor Hora:</strong> <Input id="valorHora" name="valorHora" /></p>
-              <p><strong>OBS:</strong> <Input id="obs" name="obs" /></p>
-              <p><strong>Status:</strong> <Input id="status" name="status" /></p>
-              <p><strong>Prioridade:</strong> <Input id="prioridade" name="prioridade" /></p>
+              <p><Input id="name" name="name"  placeholder="Nome:" /></p>
+              <p><Input id="responsavel" name="responsavel" placeholder="Responsável:" /></p>
+              <p><Input id="dataAprovacao" name="dataAprovacao" placeholder="Data de Aprovação:" /></p>
+              <p><Input id="tipoCobranca" name="tipoCobranca" placeholder="Tipo de Cobrança:"/></p>
+              <p><Input id="ptax" name="ptax" placeholder="PTAX:" /></p>
+              <p><Input id="orcado" name="orcado" placeholder="Orçado:"/></p>
+              <p><Input id="realizado" name="realizado" placeholder="Realizado:"/></p>
+              <p><Input id="variacao" name="variacao" placeholder="Variação:"/></p>
+              <p><Input id="horaOrcadas" name="horaOrcadas" placeholder="Horas Orçadas:"/></p>
+              <p><Input id="valorHora" name="valorHora" placeholder="Valor Hora:"/></p>
+              <p><Input id="obs" name="obs" placeholder="OBS:"/></p>
+              <p><Input id="status" name="status" placeholder="Status:"/></p>
+              <p><Input id="prioridade" name="prioridade" placeholder="Prioridade:"/></p>
             </div>
-            <DialogFooter className="m-2">
-                 <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                 </DialogClose>
-                      <Button type="submit">Salvar</Button>
+            <DialogFooter className="m-1">
+              <DialogClose asChild>
+                <Button variant="outline">Cancelar</Button>
+              </DialogClose>
+              <Button type="submit">Salvar</Button>
             </DialogFooter>
-            </form>
-          ) : (
-            <p>Nenhum alerta selecionado.</p>
-          )}
-        </DialogContent>
-      </Dialog>
-
+          </form>
+        ) : (
+          <p>Nenhum alerta selecionado.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  
       {/* 🔹 Tabela */}
       <div className="font-sans items-center justify-items-center text-white custom-scrollbar">
         <Table>
@@ -127,7 +135,7 @@ const [toggle, setToggle] = useState<string[]>([]);
             </TableRow>
           </TableHeader>
 
-          <TableBody className="bg-gray-900">
+          <TableBody className="bg-popover-foreground">
             {alerts.map((alert) => (
               <TableRow
                 key={alert.id}
@@ -140,7 +148,8 @@ const [toggle, setToggle] = useState<string[]>([]);
                     onCheckedChange={(checked) =>
                       handleSelect(String(alert.id), !!checked)
                     }
-                    onClick={(e) => e.stopPropagation()} // impede o clique no checkbox de abrir o modal
+                    onClick={(e: MouseEvent) => e.stopPropagation()} // impede o clique no checkbox de abrir o modal
+                    
                   />
                 </TableCell>
                 <TableCell className="font-medium">{alert.name}</TableCell>
@@ -154,20 +163,23 @@ const [toggle, setToggle] = useState<string[]>([]);
                 <TableCell>{alert.obs}</TableCell>
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
-                <TableCell className="text-right">Anexo Aqui</TableCell>
+                  <TableCell className="text-right ">
+                  <Button onClick={(e: MouseEvent) => e.stopPropagation()}>
+                    <UploadButton  />
+                  </Button>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
 
-          <TableFooter className="bg-black">
-            {toggle ? (
+          <TableFooter className="bg-background">
+            {toggle.length > 0 ? (
             <div className="p-4">
                 <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-
                     <DialogTrigger asChild>
-                        <Button variant="outline">Delete Item</Button>
+                        <ButtonDelete 
+                        />
                     </DialogTrigger>
-
                     <DialogContent className="h-30">
                         <form action={handleDelete}>
                             <input type="hidden" name="id" value={toggle} />

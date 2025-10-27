@@ -2,17 +2,21 @@ generator client {
   provider = "prisma-client-js"
   output   = "../lib/generated/prisma"
 }
-
+ 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-model Attachment {
-  id Int @id @default(autoincrement())
-  anexo String
+ 
+model File {
+  id String @id @default(cuid())
+  filename String
+  url String
+  createdAt DateTime @default(now())
+  alerts AlertItems? @relation(fields: [alertId], references: [id])
+  alertId Int?
 }
-
+ 
 model AlertItems {
   id            Int    @id @default(autoincrement())
   name          String
@@ -28,4 +32,5 @@ model AlertItems {
   obs           String?
   status        String
   prioridade    String
+  anexos File[]
 }
