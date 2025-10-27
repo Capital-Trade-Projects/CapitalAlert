@@ -6,7 +6,10 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation";
 
 export async function getAlerts():Promise<AlertItems[]> {
-    return await prisma.alertItems.findMany();
+    return await prisma.alertItems.findMany({
+      include: { anexos: true },
+      orderBy: { id: 'desc' }
+    });
 }
 
 export async function createAlert(data: FormData): Promise<void> {
@@ -24,6 +27,7 @@ export async function createAlert(data: FormData): Promise<void> {
   const status = data.get("status") as string
   const prioridade = data.get("prioridade") as string
   const variacao = data.get("variacao") as string
+  const anexos = JSON.parse(data.get("anexos") as string || "[]")
 
   await prisma.alertItems.create({
     data: {
@@ -40,6 +44,12 @@ export async function createAlert(data: FormData): Promise<void> {
       status,
       prioridade,
       variacao,
+      anexos: {
+        create: anexos.map((a: any) => ({
+          filename: a.filename,
+          url: a.url
+        }))
+      }
     },
   })
 
@@ -101,3 +111,4 @@ export async function deleteAlert(data:FormData): Promise<void> {
   revalidatePath('/')
   redirect('/')
 }
+

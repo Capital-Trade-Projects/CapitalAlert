@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertItems } from "@/lib/generated/prisma";
 import {
   Dialog,
@@ -36,6 +36,21 @@ const [toggle, setToggle] = useState<string[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<AlertItems | null>(null);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  
+
+  async function loadFiles() {
+    const res = await fetch('/api/files');
+    const data = await res.json();
+    setFiles(data);
+  }
+
+  useEffect(() => {
+    loadFiles();
+  }, [])
 
   const handleSelect = (id: string, checked: boolean) => {
     setToggle((prev) =>
@@ -61,8 +76,6 @@ const [toggle, setToggle] = useState<string[]>([]);
     router.refresh()
     setOpenDelete(false)
   }
-
-  console.log(toggle, 'deu bom')
 
   return (
     <>
@@ -132,7 +145,7 @@ const [toggle, setToggle] = useState<string[]>([]);
               <TableRow
                 key={alert.id}
                 className="cursor-pointer hover:bg-gray-800 transition"
-                onClick={() => handleRowClick(alert)} // 👈 abre o diálogo com os dados do alerta
+                onClick={() => handleRowClick(alert)} 
               >
                 <TableCell>
                   <Checkbox
@@ -140,7 +153,7 @@ const [toggle, setToggle] = useState<string[]>([]);
                     onCheckedChange={(checked) =>
                       handleSelect(String(alert.id), !!checked)
                     }
-                    onClick={(e) => e.stopPropagation()} // impede o clique no checkbox de abrir o modal
+                    onClick={(e) => e.stopPropagation()} 
                   />
                 </TableCell>
                 <TableCell className="font-medium">{alert.name}</TableCell>
@@ -154,13 +167,66 @@ const [toggle, setToggle] = useState<string[]>([]);
                 <TableCell>{alert.obs}</TableCell>
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
-                <TableCell className="text-right">Anexo Aqui</TableCell>
+                <TableCell className="text-right">
+                    <form
+                    onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (!file) return console.log("Selecione um arquivo");
+
+                        try {
+                            setLoading(true);
+                            const formData = new FormData();
+                            formData.append("file", file);
+                            formData.append("alertId", alert.id.toString());
+
+                            const res = await fetch("/api/upload", {
+                                method: "POST",
+                                body: formData,
+                            });
+
+                            const data = await res.json();
+                            setLoading(false);
+
+                            if (data.error) {
+                                console.error(data.error);
+                                return;
+                            }
+                            //
+
+                            setFile(null);
+                            await loadFiles();
+                            console.log("Arquivo enviado com sucesso!");
+                        } catch (error) {
+                            console.error(error);
+                            setLoading(false);
+                        }
+                    }}
+                    className="flex flex-col items-center gap-4"
+                    onClick={(e) => e.stopPropagation()}>
+
+                        <input 
+                        type="file"
+                        onChange={(e) => {
+                            const fileInput = e.target.files?.[0];
+                            if (fileInput) setFile(fileInput);
+                        }}
+                        className="border p-2 rounded" />
+
+                        <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md">
+                            {loading ? "Enviando" : "Enviar"}
+                        </button>
+
+                    </form>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
 
           <TableFooter className="bg-black">
-            {toggle ? (
+            {toggle.length > 0 ? (
             <div className="p-4">
                 <Dialog open={openDelete} onOpenChange={setOpenDelete}>
 
@@ -185,7 +251,7 @@ const [toggle, setToggle] = useState<string[]>([]);
                 </Dialog>
             </div>
             ): (
-                <p>Nenhum item selecionado.</p>
+                <p></p>
             )}
           </TableFooter>
         </Table>
