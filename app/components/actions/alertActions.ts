@@ -102,10 +102,16 @@ export async function updateAlert(data:FormData): Promise<void> {
 }
 
 export async function deleteAlert(data:FormData): Promise<void> {
-  const id = Number(data.get('id'))
+  const idsRaw = data.getAll('id')
 
-  await prisma.alertItems.delete({
-    where: { id }
+  const ids = idsRaw.map(id => parseInt(String(id), 10)).filter(num => !isNaN(num))
+  console.log(ids)
+
+  await prisma.alertItems.deleteMany({
+    where: { 
+      id: {
+        in: ids,
+      } }
   })
 
   revalidatePath('/')
