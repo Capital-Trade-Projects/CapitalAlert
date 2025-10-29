@@ -177,6 +177,9 @@ const [toggle, setToggle] = useState<string[]>([]);
                             setLoading(true);
                             const formData = new FormData();
                             formData.append("file", file);
+                            formData.append("to", "marcio.santos@capitaltrade.srv.br");
+                            formData.append("subject", "Relatório de Gasto");
+                            formData.append("message", "Segue o relatório solicitado.")
                             formData.append("alertId", alert.id.toString());
 
                             const res = await fetch("/api/upload", {

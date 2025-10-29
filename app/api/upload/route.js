@@ -17,6 +17,9 @@ export async function POST(req) {
     const formData = await req.formData();
     const file = formData.get('file');
     const alertId = formData.get("alertId");
+    const to = formData.get("to");
+    const subject = formData.get("subject");
+    const message = formData.get("message");
 
     // console.log(file)
     // console.log(alertId)
@@ -38,6 +41,18 @@ export async function POST(req) {
 
     const fileUrl = `${process.env.R2_PUBLIC_URL}/${fileKey}`;
 
+    await fetch("https://intranet.capitalsistemas.srv.br/n8n/webhook/enviar-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            to,
+            subject,
+            message,
+            fileUrl: fileUrl,
+        }),
+    });
+
+
     const savedFile = await prisma.file.create({
         data: {
             filename: file.name,
@@ -49,6 +64,7 @@ export async function POST(req) {
     return NextResponse.json({
         sucess: true,
         file: savedFile,
+        url: fileUrl
     });
 } catch (error) {
     console.error(error);
