@@ -58,6 +58,7 @@ export async function createAlert(data: FormData): Promise<void> {
 }
 
 export async function updateAlert(data:FormData): Promise<void> {
+  let redirectPath: string | null = null
   try {
     const id = Number(data.get('id'))
     const name = data.get('name') as string
@@ -93,11 +94,14 @@ export async function updateAlert(data:FormData): Promise<void> {
       }
     })
 
-    revalidatePath('/')
-    redirect('/');
+    redirectPath = `/`
     
   } catch (error) {
-    throw new Error('Falhou a atualização dos dados') 
+      redirect('/')
+    
+  } finally {
+    if (redirectPath)
+      redirect(redirectPath)
   }
 }
 
