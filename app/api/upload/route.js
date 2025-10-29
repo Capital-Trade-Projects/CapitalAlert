@@ -12,13 +12,14 @@ const r2 = new S3Client({
 });
 
 export async function POST(req) {
+    
     try {
     const formData = await req.formData();
     const file = formData.get('file');
     const alertId = formData.get("alertId");
 
-    console.log(file)
-    console.log(alertId)
+    // console.log(file)
+    // console.log(alertId)
 
     if (!file) {
         return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
