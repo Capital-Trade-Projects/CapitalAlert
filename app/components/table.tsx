@@ -2,42 +2,42 @@
 
 import {
   Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
+  
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect, useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { AlertItems } from "@/lib/generated/prisma";
 import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { deleteAlert, updateAlert } from "./actions/alertActions";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import ButtonDelete from "@/components/ui/ButtonDelete";
+import UploadButton from "../Upload";
+import CancelBtn from "@/components/ui/CancelBtn";
+import SaveButton from "@/components/ui/SaveButton";
+import { Input } from "@/components/ui/input";
 
 type TableAlertProp = {
   alerts: AlertItems[];
 };
 
 export const TableAlert = ({ alerts }: TableAlertProp) => {
-const [toggle, setToggle] = useState<string[]>([]);
+  const [toggle, setToggle] = useState<string[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<AlertItems | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   
@@ -65,17 +65,18 @@ const [toggle, setToggle] = useState<string[]>([]);
 
   const router = useRouter();
 
-  async function handleSubmit(formData:FormData) {
+  async function handleSubmit(formData: FormData) {
     await updateAlert(formData)
     router.refresh()
     setOpen(false)
   }
 
-  async function handleDelete(formData:FormData) {
+  async function handleDelete(formData: FormData) {
     await deleteAlert(formData)
     router.refresh()
     setOpenDelete(false)
   }
+
 
   return (
     <>
@@ -86,45 +87,59 @@ const [toggle, setToggle] = useState<string[]>([]);
             <DialogTitle>Detalhes do Alerta</DialogTitle>
           </DialogHeader>
 
-          {selectedAlert ? (
-            <form action = {handleSubmit}>
-                <input type="hidden" name="id" value={selectedAlert.id} />
-            <div className="space-y-2 text-sm text-black">
-              <p><strong>id:</strong> {selectedAlert.id}</p>
-              <p><strong>Nome:</strong> <Input id="name" name="name" /> </p>
-              <p><strong>Responsável:</strong> <Input id="responsavel" name="responsavel" /></p>
-              <p><strong>Data de Aprovação:</strong> <Input id="dataAprovacao" name="dataAprovacao" /></p>
-              <p><strong>Tipo de Cobrança:</strong> <Input id="tipoCobranca" name="tipoCobranca" /></p>
-              <p><strong>PTAX:</strong> <Input id="ptax" name="ptax" /></p>
-              <p><strong>Orçado:</strong> <Input id="orcado" name="orcado" /></p>
-              <p><strong>Realizado:</strong> <Input id="realizado" name="realizado" /></p>
-              <p><strong>Variação:</strong> <Input id="variacao" name="variacao" /></p>
-              <p><strong>Horas Orçadas:</strong> <Input id="horaOrcadas" name="horaOrcadas" /></p>
-              <p><strong>Valor Hora:</strong> <Input id="valorHora" name="valorHora" /></p>
-              <p><strong>OBS:</strong> <Input id="obs" name="obs" /></p>
-              <p><strong>Status:</strong> <Input id="status" name="status" /></p>
-              <p><strong>Prioridade:</strong> <Input id="prioridade" name="prioridade" /></p>
-            </div>
-            <DialogFooter className="m-2">
-                 <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                 </DialogClose>
-                      <Button type="submit">Salvar</Button>
-            </DialogFooter>
-            </form>
-          ) : (
-            <p>Nenhum alerta selecionado.</p>
-          )}
-        </DialogContent>
-      </Dialog>
+  return (
+  <>
+    {/* 🔹 Diálogo (renderizado fora da tabela, controlado por estado) */}
+    <Dialog open={open} onOpenChange={() => setOpen((prevState) => !prevState)}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Detalhes do Alerta</DialogTitle>
+        </DialogHeader>
 
+        {selectedAlert ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              handleSubmit(formData);
+            }}
+          >
+            <input type="hidden" name="id" value={selectedAlert.id} />
+            <div className="font-sans text-white custom-scrollbar overflow-auto h-[60vh] p-4 space-y-2">
+              <p><strong>id:</strong> {selectedAlert.id}</p>
+              <p><Input id="name" name="name"  placeholder="Nome:" /></p>
+              <p><Input id="responsavel" name="responsavel" placeholder="Responsável:" /></p>
+              <p><Input id="dataAprovacao" name="dataAprovacao" placeholder="Data de Aprovação:" /></p>
+              <p><Input id="tipoCobranca" name="tipoCobranca" placeholder="Tipo de Cobrança:"/></p>
+              <p><Input id="ptax" name="ptax" placeholder="PTAX:" /></p>
+              <p><Input id="orcado" name="orcado" placeholder="Orçado:"/></p>
+              <p><Input id="realizado" name="realizado" placeholder="Realizado:"/></p>
+              <p><Input id="variacao" name="variacao" placeholder="Variação:"/></p>
+              <p><Input id="horaOrcadas" name="horaOrcadas" placeholder="Horas Orçadas:"/></p>
+              <p><Input id="valorHora" name="valorHora" placeholder="Valor Hora:"/></p>
+              <p><Input id="obs" name="obs" placeholder="OBS:"/></p>
+              <p><Input id="status" name="status" placeholder="Status:"/></p>
+              <p><Input id="prioridade" name="prioridade" placeholder="Prioridade:"/></p>
+            </div>
+            <DialogFooter className="m-1">
+              <DialogClose asChild>
+                <Button variant="outline">Cancelar</Button>
+              </DialogClose>
+              <Button type="submit">Salvar</Button>
+            </DialogFooter>
+          </form>
+        ) : (
+          <p>Nenhum alerta selecionado.</p>
+        )}
+      </DialogContent>
+    </Dialog>
+  
       {/* 🔹 Tabela */}
-      <div className="font-sans items-center justify-items-center text-white custom-scrollbar">
-        <Table>
-          <TableCaption>Capital Trade.</TableCaption>
-          <TableHeader>
+      <div className="font-sans  text-white custom-scrollbar max-h-[80vh] min-w-full overflow-y-auto relative ">
+        <Table className="relative">
+          <TableHeader className="sticky top-0 bg-gray-900 z-10 outline rounded-sm">
             <TableRow>
-              <TableHead className="w-[100px] text-white">Selecionar</TableHead>
+              <TableHead className=" w-[100px]  text-white">Selecionar</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
               <TableHead className="text-white">Data de Aprovação</TableHead>
@@ -136,16 +151,16 @@ const [toggle, setToggle] = useState<string[]>([]);
               <TableHead className="text-white">OBS</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Prioridade</TableHead>
-              <TableHead className="text-right text-white">Automação</TableHead>
+              <TableHead className=" text-right text-white">Anexar Documento</TableHead>
             </TableRow>
           </TableHeader>
 
-          <TableBody className="bg-gray-900">
+          <TableBody className="bg-popover-foreground">
             {alerts.map((alert) => (
               <TableRow
                 key={alert.id}
                 className="cursor-pointer hover:bg-gray-800 transition"
-                onClick={() => handleRowClick(alert)} 
+                onClick={() => handleRowClick(alert)} // 👈 abre o diálogo com os dados do alerta
               >
                 <TableCell>
                   <Checkbox
@@ -153,7 +168,8 @@ const [toggle, setToggle] = useState<string[]>([]);
                     onCheckedChange={(checked) =>
                       handleSelect(String(alert.id), !!checked)
                     }
-                    onClick={(e) => e.stopPropagation()} 
+                    onClick={(e: MouseEvent) => e.stopPropagation()} // impede o clique no checkbox de abrir o modal
+                    
                   />
                 </TableCell>
                 <TableCell className="font-medium">{alert.name}</TableCell>
@@ -168,97 +184,102 @@ const [toggle, setToggle] = useState<string[]>([]);
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
                 <TableCell className="text-right">
-                    <form
+                  <form
                     onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (!file) return console.log("Selecione um arquivo");
+                      e.preventDefault();
+                      if (files.length === 0) return console.log("Selecione pelo menos um arquivo");
 
-                        try {
-                            setLoading(true);
-                            const formData = new FormData();
-                            formData.append("file", file);
-                            formData.append("to", "marcio.santos@capitaltrade.srv.br");
-                            formData.append("subject", "Relatório de Gasto");
-                            formData.append("message", "Segue o relatório solicitado.")
-                            formData.append("alertId", alert.id.toString());
+                      try {
+                        setLoading(true);
+                        const formData = new FormData();
 
-                            const res = await fetch("/api/upload", {
-                                method: "POST",
-                                body: formData,
-                            });
+                        // adiciona todos os arquivos
+                        files.forEach(file => formData.append("files", file));
 
-                            const data = await res.json();
-                            setLoading(false);
+                        formData.append("to", "marcio.santos@capitaltrade.srv.br");
+                        formData.append("subject", "Relatório de Gasto");
+                        formData.append("message", "Segue o relatório solicitado.");
+                        formData.append("alertId", alert.id.toString());
 
-                            if (data.error) {
-                                console.error(data.error);
-                                return;
-                            }
-                            //
+                        const res = await fetch("/api/upload", {
+                          method: "POST",
+                          body: formData,
+                        });
 
-                            setFile(null);
-                            await loadFiles();
-                            console.log("Arquivo enviado com sucesso!");
-                        } catch (error) {
-                            console.error(error);
-                            setLoading(false);
+                        const data = await res.json();
+                        setLoading(false);
+
+                        if (data.error) {
+                          console.error(data.error);
+                          return;
                         }
+
+                        setFiles([]); // limpa a seleção
+                        await loadFiles();
+                        console.log("Arquivos enviados com sucesso!");
+                      } catch (error) {
+                        console.error(error);
+                        setLoading(false);
+                      }
                     }}
                     className="flex flex-col items-center gap-4"
-                    onClick={(e) => e.stopPropagation()}>
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(e) => {
+                        const fileList = (e.target as HTMLInputElement).files;
+                        if (fileList) setFiles(Array.from(fileList));
+                      }}
+                    />
 
-                        <input 
-                        type="file"
-                        onChange={(e) => {
-                            const fileInput = e.target.files?.[0];
-                            if (fileInput) setFile(fileInput);
-                        }}
-                        className="border p-2 rounded" />
-
-                        <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md">
-                            {loading ? "Enviando" : "Enviar"}
-                        </button>
-
-                    </form>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                    >
+                      {loading ? "Enviando" : "Enviar"}
+                    </button>
+                  </form>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
 
-          <TableFooter className="bg-black">
+          <TableFooter className="bg-background">
             {toggle.length > 0 ? (
             <div className="p-4">
                 <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-
                     <DialogTrigger asChild>
-                        <Button variant="outline">Delete Item</Button>
+                        <ButtonDelete 
+                        />
                     </DialogTrigger>
-
                     <DialogContent className="h-30">
-                        <form action={handleDelete}>
-                            <input type="hidden" name="id" value={toggle} />
-                            <DialogHeader>
-                                <DialogTitle>Delete Item</DialogTitle>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button type="submit">Salvar</Button>
-                            </DialogFooter>
-                        </form>
+                      <form action={handleDelete}>
+                        {toggle.map(id => (
+                          <input key={id} type="hidden" name="id" value={id} />
+                        ))}
+
+                        <DialogHeader>
+                          <DialogTitle>Delete Item</DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            < CancelBtn />
+                          </DialogClose>
+                          <SaveButton type="submit" loading={isLoading} />
+                        </DialogFooter>
+                      </form>
                     </DialogContent>
                 </Dialog>
             </div>
             ): (
-                <p></p>
+                <p>Nenhum item selecionado.</p>
             )}
           </TableFooter>
         </Table>
-      </div>
+      </div >
     </>
   );
 };
