@@ -17,30 +17,34 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { deleteAlert, updateAlert } from "./actions/alertActions";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import DeleteButton from "@/components/ui/DeleteButton";
+import SaveButton from "@/components/ui/SaveButton";
+import CancelBtn from "@/components/ui/CancelBtn";
 
 type TableAlertProp = {
   alerts: AlertItems[];
 };
 
 export const TableAlert = ({ alerts }: TableAlertProp) => {
-const [toggle, setToggle] = useState<string[]>([]);
+  const [toggle, setToggle] = useState<string[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<AlertItems | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
+  const [,setFiles] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
-  
+
 
   async function loadFiles() {
     const res = await fetch('/api/files');
@@ -65,13 +69,13 @@ const [toggle, setToggle] = useState<string[]>([]);
 
   const router = useRouter();
 
-  async function handleSubmit(formData:FormData) {
+  async function handleSubmit(formData: FormData) {
     await updateAlert(formData)
     router.refresh()
     setOpen(false)
   }
 
-  async function handleDelete(formData:FormData) {
+  async function handleDelete(formData: FormData) {
     await deleteAlert(formData)
     router.refresh()
     setOpenDelete(false)
@@ -87,30 +91,81 @@ const [toggle, setToggle] = useState<string[]>([]);
           </DialogHeader>
 
           {selectedAlert ? (
-            <form action = {handleSubmit}>
-                <input type="hidden" name="id" value={selectedAlert.id} />
-            <div className="space-y-2 text-sm text-black">
-              <p><strong>id:</strong> {selectedAlert.id}</p>
-              <p><strong>Nome:</strong> <Input id="name" name="name" /> </p>
-              <p><strong>Responsável:</strong> <Input id="responsavel" name="responsavel" /></p>
-              <p><strong>Data de Aprovação:</strong> <Input id="dataAprovacao" name="dataAprovacao" /></p>
-              <p><strong>Tipo de Cobrança:</strong> <Input id="tipoCobranca" name="tipoCobranca" /></p>
-              <p><strong>PTAX:</strong> <Input id="ptax" name="ptax" /></p>
-              <p><strong>Orçado:</strong> <Input id="orcado" name="orcado" /></p>
-              <p><strong>Realizado:</strong> <Input id="realizado" name="realizado" /></p>
-              <p><strong>Variação:</strong> <Input id="variacao" name="variacao" /></p>
-              <p><strong>Horas Orçadas:</strong> <Input id="horaOrcadas" name="horaOrcadas" /></p>
-              <p><strong>Valor Hora:</strong> <Input id="valorHora" name="valorHora" /></p>
-              <p><strong>OBS:</strong> <Input id="obs" name="obs" /></p>
-              <p><strong>Status:</strong> <Input id="status" name="status" /></p>
-              <p><strong>Prioridade:</strong> <Input id="prioridade" name="prioridade" /></p>
-            </div>
-            <DialogFooter className="m-2">
-                 <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                 </DialogClose>
-                      <Button type="submit">Salvar</Button>
-            </DialogFooter>
+            <form action={handleSubmit} className="max-w-lg mx-auto">
+              <input type="hidden" name="id" value={selectedAlert.id} />
+
+              <div className="grid gap-3 mb-4 grid-cols-2 h-[32vh] overflow-auto custom-scrollbar">
+                <div>
+                  <label htmlFor="name" className="block mb-1 text-xs font-medium text-white dark:text-black">Nome</label>
+                  <input type="text" id="name" name="name" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Nome" required defaultValue={selectedAlert.name} />
+                </div>
+                <div>
+                  <label htmlFor="responsavel" className="block mb-1 text-xs font-medium text-white dark:text-black">Responsável</label>
+                  <input type="text" id="responsavel" name="responsavel" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Responsável" required defaultValue={selectedAlert.responsavel} />
+                </div>
+                <div>
+                  <label htmlFor="dataAprovacao" className="block mb-1 date- font-medium text-white dark:text-black">Data de aprovação</label>
+                  <input type="date" id="dataAprovacao" name="dataAprovacao" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" required defaultValue={selectedAlert.dataAprovacao} />
+                </div>
+                <div>
+                  <label htmlFor="tipoCobranca" className="block mb-1 text-xs font-medium text-white dark:text-black">Tipo de Cobrança</label>
+                  <select id="tipoCobranca" name="tipoCobranca" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" defaultValue={selectedAlert.tipoCobranca} >
+                    <option>Mensal</option>
+                    <option>Semestral</option>
+                    <option>Anual</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="ptax" className="block mb-1 text-xs font-medium text-white dark:text-black">PTAX</label>
+                  <select id="ptax" name="ptax" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" required defaultValue={selectedAlert.ptax ?? ''} >
+                    <option>Dólar</option>
+                    <option>Euro</option>
+                    <option>Real</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="orcado" className="block mb-1 text-xs font-medium text-white dark:text-black">Orçado</label>
+                  <input type="text" id="orcado" name="orcado" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Orçado" required defaultValue={selectedAlert.orcado ?? ''} />
+                </div>
+                <div>
+                  <label htmlFor="horaOrcadas" className="block mb-1 text-xs font-medium text-white dark:text-black">Horas Orçadas</label>
+                  <input type="text" id="horaOrcadas" name="horaOrcadas" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Horas orçadas" required defaultValue={selectedAlert.horaOrcadas ?? ''} />
+                </div>
+                <div>
+                  <label htmlFor="valorHora" className="block mb-1 text-xs font-medium text-white dark:text-black">Valor Hora</label>
+                  <input type="text" id="valorHora" name="valorHora" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Valor Hora" required defaultValue={selectedAlert.valorHora ?? ''} />
+                </div>
+              </div>
+              <div className="grid gap-3 mb-4 grid-cols-2">
+                <div>
+                  <label htmlFor="prioridade" className="block mb-1 text-xs font-medium text-white dark:text-black">Prioridade</label>
+                  <select id="prioridade" name="prioridade" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" defaultValue={selectedAlert.prioridade}>
+                    <option>Baixa</option>
+                    <option>Média</option>
+                    <option>Alta</option>
+                    <option>Critico</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="status" className="block mb-1 text-xs font-medium text-white dark:text-black">Status</label>
+                  <select id="status" name="status" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" defaultValue={selectedAlert.status}>
+                    <option>Em Andamento</option>
+                    <option>Pendente</option>
+                    <option>Concluído</option>
+                    <option>Cancelado</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mb-2">
+                <label htmlFor="obs" className="block mb-1 text-xs font-medium text-white dark:text-black">OBS</label>
+                <input type="text" id="obs" name="obs" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Obs" defaultValue={selectedAlert.obs ?? ''} />
+              </div>
+              <DialogFooter className="m-2">
+                <DialogClose asChild>
+                  <CancelBtn />
+                </DialogClose>
+                <SaveButton type="submit" loading={isLoading} />
+              </DialogFooter>
             </form>
           ) : (
             <p>Nenhum alerta selecionado.</p>
@@ -119,12 +174,11 @@ const [toggle, setToggle] = useState<string[]>([]);
       </Dialog>
 
       {/* 🔹 Tabela */}
-      <div className="font-sans items-center justify-items-center text-white custom-scrollbar">
-        <Table>
-          <TableCaption>Capital Trade.</TableCaption>
-          <TableHeader>
+      <div className="font-sans  text-white custom-scrollbar max-h-[80vh] min-w-full overflow-y-auto relative ">
+        <Table className="relative">
+          <TableHeader className="sticky top-0 bg-gray-900 z-10 outline rounded-sm">
             <TableRow>
-              <TableHead className="w-[100px] text-white">Selecionar</TableHead>
+              <TableHead className=" w-[100px]  text-white">Selecionar</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
               <TableHead className="text-white">Data de Aprovação</TableHead>
@@ -136,16 +190,15 @@ const [toggle, setToggle] = useState<string[]>([]);
               <TableHead className="text-white">OBS</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Prioridade</TableHead>
-              <TableHead className="text-right text-white">Automação</TableHead>
+              <TableHead className=" text-right text-white">Anexar Documento</TableHead>
             </TableRow>
           </TableHeader>
-
-          <TableBody className="bg-gray-900">
+          <TableBody className="bg-gray-900 h-full m-5 ">
             {alerts.map((alert) => (
               <TableRow
                 key={alert.id}
-                className="cursor-pointer hover:bg-gray-800 transition"
-                onClick={() => handleRowClick(alert)} 
+                className="cursor-pointer hover:bg-gray-800 transition outline rounded-sm m-1  "
+                onClick={() => handleRowClick(alert)}
               >
                 <TableCell>
                   <Checkbox
@@ -153,7 +206,7 @@ const [toggle, setToggle] = useState<string[]>([]);
                     onCheckedChange={(checked) =>
                       handleSelect(String(alert.id), !!checked)
                     }
-                    onClick={(e) => e.stopPropagation()} 
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </TableCell>
                 <TableCell className="font-medium">{alert.name}</TableCell>
@@ -167,98 +220,118 @@ const [toggle, setToggle] = useState<string[]>([]);
                 <TableCell>{alert.obs}</TableCell>
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
-                <TableCell className="text-right">
-                    <form
-                    onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (!file) return console.log("Selecione um arquivo");
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <Dialog >
+                    <DialogTrigger asChild>
+                      <Button variant="outline">Anexar arquivo</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md bg-background text-amber-50">
+                      <DialogHeader >
+                        <DialogTitle>Anexar</DialogTitle>
+                        <DialogDescription className="text-amber-50">
+                          Selecione um arquivo para compartilhar com este alerta.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="flex items-center gap-4 py-4 bg-foreground/5 rounded-md">
+                        <div className="grid flex-1 gap-2">
+                          <form
+                            onSubmit={async (e) => {
+                              e.preventDefault();
+                              if (!file) return console.log("Selecione um arquivo");
 
-                        try {
-                            setLoading(true);
-                            const formData = new FormData();
-                            formData.append("file", file);
-                            formData.append("to", "marcio.santos@capitaltrade.srv.br");
-                            formData.append("subject", "Relatório de Gasto");
-                            formData.append("message", "Segue o relatório solicitado.")
-                            formData.append("alertId", alert.id.toString());
+                              try {
+                                setLoading(true);
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("alertId", alert.id.toString());
 
-                            const res = await fetch("/api/upload", {
-                                method: "POST",
-                                body: formData,
-                            });
+                                const res = await fetch("/api/upload", {
+                                  method: "POST",
+                                  body: formData,
+                                });
 
-                            const data = await res.json();
-                            setLoading(false);
+                                const data = await res.json();
+                                setLoading(false);
 
-                            if (data.error) {
-                                console.error(data.error);
-                                return;
-                            }
-                            //
+                                if (data.error) {
+                                  console.error(data.error);
+                                  return;
+                                }
+                                //
+                                setFile(null);
+                                await loadFiles();
+                                console.log("Arquivo enviado com sucesso!");
+                              } catch (error) {
+                                console.error(error);
+                                setLoading(false);
+                              }
+                            }}
+                            className="flex flex-col items-center gap-4"
+                          >
+                            <input
+                              type="file"
+                              onChange={(e) => {
+                                const fileInput = e.target.files?.[0];
+                                if (fileInput) setFile(fileInput);
+                              }}
+                              className="border p-2 rounded" />
+                            <SaveButton
+                              type="submit"
+                              disabled={loading}>
+                              {loading ? "Enviando" : "Enviar"}
+                            </SaveButton>
+                          </form>
+                        </div>
+                      </div>
+                      <DialogFooter className="sm:justify-start">
+                        <DialogClose asChild>
+                          <CancelBtn type="button">
 
-                            setFile(null);
-                            await loadFiles();
-                            console.log("Arquivo enviado com sucesso!");
-                        } catch (error) {
-                            console.error(error);
-                            setLoading(false);
-                        }
-                    }}
-                    className="flex flex-col items-center gap-4"
-                    onClick={(e) => e.stopPropagation()}>
-
-                        <input 
-                        type="file"
-                        onChange={(e) => {
-                            const fileInput = e.target.files?.[0];
-                            if (fileInput) setFile(fileInput);
-                        }}
-                        className="border p-2 rounded" />
-
-                        <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md">
-                            {loading ? "Enviando" : "Enviar"}
-                        </button>
-
-                    </form>
+                          </CancelBtn>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
-
           <TableFooter className="bg-black">
-            {toggle.length > 0 ? (
-            <div className="p-4">
-                <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-
+            <tr>
+              <td>
+                {toggle.length > 0 ? (
+                  <Dialog open={openDelete} onOpenChange={setOpenDelete}>
                     <DialogTrigger asChild>
-                        <Button variant="outline">Delete Item</Button>
+                      <DeleteButton />
                     </DialogTrigger>
-
                     <DialogContent className="h-30">
-                        <form action={handleDelete}>
-                            <input type="hidden" name="id" value={toggle} />
-                            <DialogHeader>
-                                <DialogTitle>Delete Item</DialogTitle>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button type="submit">Salvar</Button>
-                            </DialogFooter>
-                        </form>
+                      <form action={handleDelete}>
+                        {toggle.map(id => (
+                          <input key={id} type="hidden" name="id" value={id} />
+                        ))}
+
+                        <DialogHeader>
+                          <DialogTitle>Delete Item</DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            < CancelBtn />
+                          </DialogClose>
+                          <SaveButton type="submit" loading={isLoading} />
+                        </DialogFooter>
+                      </form>
                     </DialogContent>
-                </Dialog>
-            </div>
-            ): (
-                <p></p>
-            )}
+                  </Dialog>
+                ) : (
+
+                  <p>Capital trade</p>
+
+                )}
+              </td>
+            </tr>
           </TableFooter>
         </Table>
-      </div>
+      </div >
     </>
   );
 };
