@@ -37,7 +37,7 @@ const [toggle, setToggle] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [files, setFiles] = useState<{ name: string; url: string }[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   
@@ -76,6 +76,7 @@ const [toggle, setToggle] = useState<string[]>([]);
     router.refresh()
     setOpenDelete(false)
   }
+
 
   return (
     <>
@@ -168,61 +169,64 @@ const [toggle, setToggle] = useState<string[]>([]);
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
                 <TableCell className="text-right">
-                    <form
+                  <form
                     onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (!file) return console.log("Selecione um arquivo");
+                      e.preventDefault();
+                      if (files.length === 0) return console.log("Selecione pelo menos um arquivo");
 
-                        try {
-                            setLoading(true);
-                            const formData = new FormData();
-                            formData.append("file", file);
-                            formData.append("to", "marcio.santos@capitaltrade.srv.br");
-                            formData.append("subject", "Relatório de Gasto");
-                            formData.append("message", "Segue o relatório solicitado.")
-                            formData.append("alertId", alert.id.toString());
+                      try {
+                        setLoading(true);
+                        const formData = new FormData();
 
-                            const res = await fetch("/api/upload", {
-                                method: "POST",
-                                body: formData,
-                            });
+                        // adiciona todos os arquivos
+                        files.forEach(file => formData.append("files", file));
 
-                            const data = await res.json();
-                            setLoading(false);
+                        formData.append("to", "marcio.santos@capitaltrade.srv.br");
+                        formData.append("subject", "Relatório de Gasto");
+                        formData.append("message", "Segue o relatório solicitado.");
+                        formData.append("alertId", alert.id.toString());
 
-                            if (data.error) {
-                                console.error(data.error);
-                                return;
-                            }
-                            //
+                        const res = await fetch("/api/upload", {
+                          method: "POST",
+                          body: formData,
+                        });
 
-                            setFile(null);
-                            await loadFiles();
-                            console.log("Arquivo enviado com sucesso!");
-                        } catch (error) {
-                            console.error(error);
-                            setLoading(false);
+                        const data = await res.json();
+                        setLoading(false);
+
+                        if (data.error) {
+                          console.error(data.error);
+                          return;
                         }
+
+                        setFiles([]); // limpa a seleção
+                        await loadFiles();
+                        console.log("Arquivos enviados com sucesso!");
+                      } catch (error) {
+                        console.error(error);
+                        setLoading(false);
+                      }
                     }}
                     className="flex flex-col items-center gap-4"
-                    onClick={(e) => e.stopPropagation()}>
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="file"
+                      multiple
+                      onChange={(e) => {
+                        const fileList = (e.target as HTMLInputElement).files;
+                        if (fileList) setFiles(Array.from(fileList));
+                      }}
+                    />
 
-                        <input 
-                        type="file"
-                        onChange={(e) => {
-                            const fileInput = e.target.files?.[0];
-                            if (fileInput) setFile(fileInput);
-                        }}
-                        className="border p-2 rounded" />
-
-                        <button
-                        type="submit"
-                        disabled={loading}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md">
-                            {loading ? "Enviando" : "Enviar"}
-                        </button>
-
-                    </form>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md"
+                    >
+                      {loading ? "Enviando" : "Enviar"}
+                    </button>
+                  </form>
                 </TableCell>
               </TableRow>
             ))}
