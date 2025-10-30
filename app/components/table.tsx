@@ -2,13 +2,7 @@
 
 import {
   Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
+  
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, type MouseEvent } from "react";
@@ -17,25 +11,29 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { deleteAlert, updateAlert } from "./actions/alertActions";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import ButtonDelete from "@/components/ui/ButtonDelete";
 import UploadButton from "../Upload";
+import CancelBtn from "@/components/ui/CancelBtn";
+import SaveButton from "@/components/ui/SaveButton";
+import { Input } from "@/components/ui/input";
 
 type TableAlertProp = {
   alerts: AlertItems[];
 };
 
 export const TableAlert = ({ alerts }: TableAlertProp) => {
-const [toggle, setToggle] = useState<string[]>([]);
+  const [toggle, setToggle] = useState<string[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<AlertItems | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
@@ -52,13 +50,13 @@ const [toggle, setToggle] = useState<string[]>([]);
 
   const router = useRouter();
 
-  async function handleSubmit(formData:FormData) {
+  async function handleSubmit(formData: FormData) {
     await updateAlert(formData)
     router.refresh()
     setOpen(false)
   }
 
-  async function handleDelete(formData:FormData) {
+  async function handleDelete(formData: FormData) {
     await deleteAlert(formData)
     router.refresh()
     setOpenDelete(false)
@@ -114,12 +112,11 @@ const [toggle, setToggle] = useState<string[]>([]);
     </Dialog>
   
       {/* 🔹 Tabela */}
-      <div className="font-sans items-center justify-items-center text-white custom-scrollbar">
-        <Table>
-          <TableCaption>Capital Trade.</TableCaption>
-          <TableHeader>
+      <div className="font-sans  text-white custom-scrollbar max-h-[80vh] min-w-full overflow-y-auto relative ">
+        <Table className="relative">
+          <TableHeader className="sticky top-0 bg-gray-900 z-10 outline rounded-sm">
             <TableRow>
-              <TableHead className="w-[100px] text-white">Selecionar</TableHead>
+              <TableHead className=" w-[100px]  text-white">Selecionar</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="text-white">Responsável</TableHead>
               <TableHead className="text-white">Data de Aprovação</TableHead>
@@ -131,7 +128,7 @@ const [toggle, setToggle] = useState<string[]>([]);
               <TableHead className="text-white">OBS</TableHead>
               <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Prioridade</TableHead>
-              <TableHead className="text-right text-white">Automação</TableHead>
+              <TableHead className=" text-right text-white">Anexar Documento</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -181,18 +178,21 @@ const [toggle, setToggle] = useState<string[]>([]);
                         />
                     </DialogTrigger>
                     <DialogContent className="h-30">
-                        <form action={handleDelete}>
-                            <input type="hidden" name="id" value={toggle} />
-                            <DialogHeader>
-                                <DialogTitle>Delete Item</DialogTitle>
-                            </DialogHeader>
-                            <DialogFooter>
-                                <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                </DialogClose>
-                                <Button type="submit">Salvar</Button>
-                            </DialogFooter>
-                        </form>
+                      <form action={handleDelete}>
+                        {toggle.map(id => (
+                          <input key={id} type="hidden" name="id" value={id} />
+                        ))}
+
+                        <DialogHeader>
+                          <DialogTitle>Delete Item</DialogTitle>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            < CancelBtn />
+                          </DialogClose>
+                          <SaveButton type="submit" loading={isLoading} />
+                        </DialogFooter>
+                      </form>
                     </DialogContent>
                 </Dialog>
             </div>
@@ -201,7 +201,7 @@ const [toggle, setToggle] = useState<string[]>([]);
             )}
           </TableFooter>
         </Table>
-      </div>
+      </div >
     </>
   );
 };

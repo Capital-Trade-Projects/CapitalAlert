@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -15,6 +16,19 @@ import { createAlert} from "@/app/components/actions/alertActions";
 import AddButton from "@/components/ui/AddButton";
 
 export const HeaderAlert = () => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    const handleSubmit = async (formData: FormData) => {
+        setIsLoading(true);
+        try {
+            await createAlert(formData);
+            setOpen(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="bg-background h-[10vh] items-center justify-items-center flex justify-between">
             <div className="w-32 ml-4">

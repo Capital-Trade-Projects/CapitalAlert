@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ListObjectsV2Command, paginateListObjectsV2 } from "@aws-sdk/client-s3";
+import { paginateListObjectsV2 } from "@aws-sdk/client-s3";
 import { r2 } from "@/lib/r2Client";
  
 export async function GET() {
@@ -15,8 +15,9 @@ export async function GET() {
     );
         const objects = []
         for await ( const page of paginator) {
-            console.log(page)
+            // console.log(page)
             objects.push(page.Contents.map((o) => o.Key));
+<<<<<<< HEAD:app/api/files/router.js
         }
         objects.forEach((objectList, pageNum) => {console.log(
  
@@ -25,6 +26,16 @@ export async function GET() {
       );    
     });  
    
+=======
+        } 
+    //     objects.forEach((objectList, pageNum) => {console.log(
+
+    //     `Page ${pageNum + 1}\n------\n${objectList.map((o) => `• ${o}`).join("\n")}\n`,
+
+    //   );    
+    // });  
+    
+>>>>>>> e5e40b108c115a689f40c5a630c6f1f948417a98:app/api/files/route.js
         return NextResponse.json(paginator);
     } catch (err) {
         console.error(err)

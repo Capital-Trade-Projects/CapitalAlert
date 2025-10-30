@@ -58,6 +58,7 @@ export async function createAlert(data: FormData): Promise<void> {
 }
  
 export async function updateAlert(data:FormData): Promise<void> {
+  let redirectPath: string | null = null
   try {
     const id = Number(data.get('id'))
     const name = data.get('name') as string
@@ -92,20 +93,45 @@ export async function updateAlert(data:FormData): Promise<void> {
         variacao
       }
     })
+<<<<<<< HEAD
  
     revalidatePath('/')
     redirect('/');
    
   } catch (error) {
     throw new Error('Falhou a atualização dos dados')
+=======
+
+    redirectPath = `/`
+    
+  } catch (error) {
+      redirect('/')
+    
+  } finally {
+    if (redirectPath)
+      redirect(redirectPath)
+>>>>>>> e5e40b108c115a689f40c5a630c6f1f948417a98
   }
 }
  
 export async function deleteAlert(data:FormData): Promise<void> {
+<<<<<<< HEAD
   const id = Number(data.get('id'))
  
   await prisma.alertItems.delete({
     where: { id }
+=======
+  const idsRaw = data.getAll('id')
+
+  const ids = idsRaw.map(id => parseInt(String(id), 10)).filter(num => !isNaN(num))
+  console.log(ids)
+
+  await prisma.alertItems.deleteMany({
+    where: { 
+      id: {
+        in: ids,
+      } }
+>>>>>>> e5e40b108c115a689f40c5a630c6f1f948417a98
   })
  
   revalidatePath('/')
