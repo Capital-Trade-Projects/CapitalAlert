@@ -1,19 +1,19 @@
 "use server"
-
+ 
 import { AlertItems } from "@/lib/generated/prisma"
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation";
-
+ 
 export async function getAlerts():Promise<AlertItems[]> {
     return await prisma.alertItems.findMany({
       include: { anexos: true },
       orderBy: { id: 'desc' }
     });
 }
-
+ 
 export async function createAlert(data: FormData): Promise<void> {
-  
+ 
   const name = data.get("name") as string
   const responsavel = data.get("responsavel") as string
   const dataAprovacao = data.get("dataAprovacao") as string
@@ -28,7 +28,7 @@ export async function createAlert(data: FormData): Promise<void> {
   const prioridade = data.get("prioridade") as string
   const variacao = data.get("variacao") as string
   const anexos = JSON.parse(data.get("anexos") as string || "[]")
-
+ 
   await prisma.alertItems.create({
     data: {
       name,
@@ -52,11 +52,11 @@ export async function createAlert(data: FormData): Promise<void> {
       }
     },
   })
-
+ 
   // Importante: não dar return, apenas chamar
   revalidatePath('/')
 }
-
+ 
 export async function updateAlert(data:FormData): Promise<void> {
   let redirectPath: string | null = null
   try {
@@ -74,10 +74,10 @@ export async function updateAlert(data:FormData): Promise<void> {
     const status = data.get("status") as string
     const prioridade = data.get("prioridade") as string
     const variacao = data.get("variacao") as string
-
+ 
     await prisma.alertItems.update({
       where: { id },
-      data: { 
+      data: {
         name,
         responsavel,
         dataAprovacao,
@@ -93,6 +93,14 @@ export async function updateAlert(data:FormData): Promise<void> {
         variacao
       }
     })
+<<<<<<< HEAD
+ 
+    revalidatePath('/')
+    redirect('/');
+   
+  } catch (error) {
+    throw new Error('Falhou a atualização dos dados')
+=======
 
     redirectPath = `/`
     
@@ -102,10 +110,17 @@ export async function updateAlert(data:FormData): Promise<void> {
   } finally {
     if (redirectPath)
       redirect(redirectPath)
+>>>>>>> e5e40b108c115a689f40c5a630c6f1f948417a98
   }
 }
-
+ 
 export async function deleteAlert(data:FormData): Promise<void> {
+<<<<<<< HEAD
+  const id = Number(data.get('id'))
+ 
+  await prisma.alertItems.delete({
+    where: { id }
+=======
   const idsRaw = data.getAll('id')
 
   const ids = idsRaw.map(id => parseInt(String(id), 10)).filter(num => !isNaN(num))
@@ -116,9 +131,9 @@ export async function deleteAlert(data:FormData): Promise<void> {
       id: {
         in: ids,
       } }
+>>>>>>> e5e40b108c115a689f40c5a630c6f1f948417a98
   })
-
+ 
   revalidatePath('/')
   redirect('/')
 }
-

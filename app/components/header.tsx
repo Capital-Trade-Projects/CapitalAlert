@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -11,69 +12,72 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createAlert, deleteAlert, updateAlert } from "@/app/components/actions/alertActions";
+import { createAlert} from "@/app/components/actions/alertActions";
+import AddButton from "@/components/ui/AddButton";
 
 export const HeaderAlert = () => {
+    const [isLoading, setIsLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+
+    const handleSubmit = async (formData: FormData) => {
+        setIsLoading(true);
+        try {
+            await createAlert(formData);
+            setOpen(false);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <div className="bg-amber-500 h-[10vh] items-center justify-items-center flex justify-between">
-            <div className="text-center p-3 text-2xl">Capital Trade</div>
+        <div className="bg-background h-[10vh] items-center justify-items-center flex justify-between">
+            <div className="w-32 ml-4">
+                <img src="/Ctlight.png" />
+            </div>
 
             <div className="p-4">
                 <Dialog>
 
                     <DialogTrigger asChild>
-                        <Button variant="outline">Add Item</Button>
+                        <AddButton />
                     </DialogTrigger>
 
                     <DialogContent>
                         <form action={createAlert}>
-                            <DialogHeader>
+                            <DialogHeader className="mb-5">
                                 <DialogTitle>Adicionar Item</DialogTitle>
                             </DialogHeader>
 
-                            <div className="grid gap-3">
-                                <Label htmlFor="name">Name</Label>
-                                <Input id="name" name="name" />
+                            <div className="grid gap-2 h-[60vh] custom-scrollbar overflow-y-auto p-4 border rounded-lg  var(--input)">
 
-                                <Label htmlFor="responsavel">Responsavel</Label>
-                                <Input id="responsavel" name="responsavel" />
+                                <Input id="name" name="name" placeholder="Nome:" />
 
-                                <Label htmlFor="dataAprovacao">Data de Aprovação</Label>
-                                <Input id="dataAprovacao" name="dataAprovacao" />
+                                <Input id="responsavel" name="responsavel" placeholder="Responsavel:" />
 
-                                <Label htmlFor="tipoCobranca">Tipo de Cobrança</Label>
-                                <Input id="tipoCobranca" name="tipoCobranca" />
+                                <Input id="dataAprovacao" name="dataAprovacao" placeholder="Data Aprovação:" />
 
-                                <Label htmlFor="ptax">PTAX</Label>
-                                <Input id="ptax" name="ptax" />
+                                <Input id="tipoCobranca" name="tipoCobranca" placeholder="Tipo Cobrança:"/>
 
-                                <Label htmlFor="orcado">Orçado</Label>
-                                <Input id="orcado" name="orcado" />
+                                <Input id="ptax" name="ptax" placeholder="PTAX:"/>
 
-                                <Label htmlFor="realizado">Realizado</Label>
-                                <Input id="realizado" name="realizado" />
+                                <Input id="orcado" name="orcado" placeholder="Orcado:"/>
 
-                                <Label htmlFor="variacao">Variação</Label>
-                                <Input id="variacao" name="variacao" />
+                                <Input id="realizado" name="realizado" placeholder="Reaalizado:"/>
 
-                                <Label htmlFor="horaOrcadas">Horas Orçadas</Label>
-                                <Input id="horaOrcadas" name="horaOrcadas" />
+                                <Input id="variacao" name="variacao" placeholder="Variação:"/>
 
-                                <Label htmlFor="valorHora">Valor Hora</Label>
-                                <Input id="valorHora" name="valorHora" />
+                                <Input id="horaOrcadas" name="horaOrcadas" placeholder="Horas orcadas:" />
 
-                                <Label htmlFor="obs">OBS</Label>
-                                <Input id="obs" name="obs" />
+                                <Input id="valorHora" name="valorHora" placeholder="Valor Hora:" />
 
-                                <Label htmlFor="status">Status</Label>
-                                <Input id="status" name="status" />
+                                <Input id="obs" name="obs" placeholder="OBS:"/>
 
-                                <Label htmlFor="prioridade">Prioridade</Label>
-                                <Input id="prioridade" name="prioridade" />
+                                <Input id="status" name="status" placeholder="Status:"/>
+
+                                <Input id="prioridade" name="prioridade" placeholder="Prioridade:" />
                             </div>
 
-                            <DialogFooter>
+                            <DialogFooter className="mt-10">
                                 <DialogClose asChild>
                                     <Button variant="outline">Cancel</Button>
                                 </DialogClose>
