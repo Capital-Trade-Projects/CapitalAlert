@@ -40,21 +40,22 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [,setFiles] = useState<{ name: string; url: string }[]>([]);
+  
+  // 🔹 ALTERAÇÃO 1: Renomeado e mudado para array de Arquivos (File[])
+  const [filesToUpload, setFilesToUpload] = useState<File[]>([]); 
+  
+  const [, setFiles] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
-
-
   async function loadFiles() {
-    const res = await fetch('/api/files');
+    const res = await fetch("/api/files");
     const data = await res.json();
     setFiles(data);
   }
 
   useEffect(() => {
     loadFiles();
-  }, [])
+  }, []);
 
   const handleSelect = (id: string, checked: boolean) => {
     setToggle((prev) =>
@@ -70,15 +71,15 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
   const router = useRouter();
 
   async function handleSubmit(formData: FormData) {
-    await updateAlert(formData)
-    router.refresh()
-    setOpen(false)
+    await updateAlert(formData);
+    router.refresh();
+    setOpen(false);
   }
 
   async function handleDelete(formData: FormData) {
-    await deleteAlert(formData)
-    router.refresh()
-    setOpenDelete(false)
+    await deleteAlert(formData);
+    router.refresh();
+    setOpenDelete(false);
   }
 
   return (
@@ -95,6 +96,7 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
               <input type="hidden" name="id" value={selectedAlert.id} />
 
               <div className="grid gap-3 mb-4 grid-cols-2 h-[32vh] overflow-auto custom-scrollbar">
+                {/* ... (todos os seus campos de input do formulário principal) ... */}
                 <div>
                   <label htmlFor="name" className="block mb-1 text-xs font-medium text-white dark:text-black">Nome</label>
                   <input type="text" id="name" name="name" className="bg-gray-50 border border-gray-300 text-black text-xs rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5" placeholder="Nome" required defaultValue={selectedAlert.name} />
@@ -220,16 +222,16 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                 <TableCell>{alert.obs}</TableCell>
                 <TableCell>{alert.status}</TableCell>
                 <TableCell>{alert.prioridade}</TableCell>
-                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                  <Dialog >
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>                 
+                  <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline">Anexar arquivo</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md bg-background text-amber-50">
-                      <DialogHeader >
+                      <DialogHeader>
                         <DialogTitle>Anexar</DialogTitle>
                         <DialogDescription className="text-amber-50">
-                          Selecione um arquivo para compartilhar com este alerta.
+                          Selecione um ou mais arquivos para compartilhar com este alerta.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex items-center gap-4 py-4 bg-foreground/5 rounded-md">
@@ -237,12 +239,18 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                           <form
                             onSubmit={async (e) => {
                               e.preventDefault();
-                              if (!file) return console.log("Selecione um arquivo");
+
+                              if (filesToUpload.length === 0) return console.log("Selecione ao menos um arquivo");
 
                               try {
                                 setLoading(true);
                                 const formData = new FormData();
-                                formData.append("file", file);
+
+                                filesToUpload.forEach(file => formData.append("files", file));
+
+                                formData.append("to","marcio.santos@capitaltrade.srv.br");
+                                formData.append("subject", "Relatório de Gastos");
+                                formData.append("message", "Segue o relatotório solicitado.");
                                 formData.append("alertId", alert.id.toString());
 
                                 const res = await fetch("/api/upload", {
@@ -257,10 +265,10 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                                   console.error(data.error);
                                   return;
                                 }
-                                //
-                                setFile(null);
+                                
+                                setFilesToUpload([]); 
                                 await loadFiles();
-                                console.log("Arquivo enviado com sucesso!");
+                                console.log("Arquivos enviados com sucesso!");
                               } catch (error) {
                                 console.error(error);
                                 setLoading(false);
@@ -270,14 +278,31 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                           >
                             <input
                               type="file"
+                              multiple 
                               onChange={(e) => {
-                                const fileInput = e.target.files?.[0];
-                                if (fileInput) setFile(fileInput);
+                                const selectedFiles = e.target.files;
+                                if (selectedFiles) {
+                                  setFilesToUpload(Array.from(selectedFiles)); 
+                                }
                               }}
-                              className="border p-2 rounded" />
+                              className="border p-2 rounded"
+                            />
+
+                            {filesToUpload.length > 0 && (
+                              <div className="text-xs text-gray-400 mt-2 w-full text-left px-4">
+                                <p className="font-medium">Arquivos selecionados:</p>
+                                <ul className="list-disc list-inside">
+                                  {filesToUpload.map((f, index) => (
+                                    <li key={index}>{f.name}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
                             <SaveButton
                               type="submit"
-                              disabled={loading}>
+                              disabled={loading || filesToUpload.length === 0}
+                            >
                               {loading ? "Enviando" : "Enviar"}
                             </SaveButton>
                           </form>
@@ -285,13 +310,12 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                       </div>
                       <DialogFooter className="sm:justify-start">
                         <DialogClose asChild>
-                          <CancelBtn type="button">
-
-                          </CancelBtn>
+                          <CancelBtn type="button"></CancelBtn>
                         </DialogClose>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+
                 </TableCell>
               </TableRow>
             ))}
@@ -323,15 +347,13 @@ export const TableAlert = ({ alerts }: TableAlertProp) => {
                     </DialogContent>
                   </Dialog>
                 ) : (
-
                   <p>Capital trade</p>
-
                 )}
               </td>
             </tr>
           </TableFooter>
         </Table>
-      </div >
+      </div>
     </>
   );
 };
